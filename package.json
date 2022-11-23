@@ -1,0 +1,25 @@
+{
+  "name": "mcq_app_redis_leaderboard_demo",
+  "version": "1.0.0",
+  "description": "A demo quiz app to demo redis leaderboard",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "redis-leaderboard",
+    "node",
+    "js"
+  ],
+  "author": "Gaurav Agrawal agrawalgaurav1999@gmail.com",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "ioredis": "^5.2.4"
+  },
+  "volta": {
+    "node": "12.22.12"
+  }
+}

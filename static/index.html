@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Site</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron col text-center" id="output">
+            <button id="fetchquiz" class="btn btn-primary">Play quiz</button>
+        </div>
+        <div class="jumbotron col text-center" id="output">
+            <button id="fetchleaderboard" class="btn btn-primary">Get Leaderboard</button>
+        </div>
+    </div>
+    </div>
+</body>
+<script>
+    let startTime;
+    let form;
+    const fetchQuiz = document.getElementById("fetchquiz");
+    const fetchleaderboard = document.getElementById("fetchleaderboard");
+    const inp = document.getElementById("username");
+    const questions = [];
+    fetchQuiz.addEventListener('click', getQuiz);
+    fetchleaderboard.addEventListener('click', getLeaderBoard);
+
+    function getLeaderBoard() {
+        const username = prompt('Please enter your username', "testuser");
+        console.log(username);
+        const perPage = 10;
+        const page = 1;
+        fetchQuiz.remove();
+        fetchleaderboard.remove();
+        fetch(`http://localhost:8080/leaderboard?username=${username}&page=${page}&perPage=${perPage}`)
+        .then((res) => res.json())
+        .then((data) => {
+            const { ranks, userRank, count } = data;
+            let outputHtml = `
+            <table class="table">
+                <thead class="thead-dark">
+                    <th scope="col">Rank</th>
+                    <th scope="col">Name</th>
+                </thead>
+                <tbody>
+            `;
+            let rank = 1;
+            for(let index = 0; index <= ranks.length - 2; index += 2) {
+                outputHtml += `
+                    <tr>
+                        <th scope="row">${rank}</th>
+                        <th scope="row">${ranks[index]}</th>
+                    <tr>
+                `;
+                rank++;
+            }
+            outputHtml += `</tbody></table>`;
+            outputHtml += `
+                <div class='card card-body mb-3'>
+                    <h3>Your rank is ${userRank} </h3>
+                </div>
+            `;
+            document.getElementById('output').innerHTML = outputHtml;
+        })
+    }
+
+    function getQuiz() {
+            fetchQuiz.remove();
+            fetch('http://localhost:8080/questions')
+            .then((res) => res.json())
+            .then((data) => {
+                startTime = new Date();
+                let output = `<h4 class="align-center">Questions</h2>
+                    <form id="hello" action="/submit" method="POST">`;
+                data.forEach((question) => {
+                    questions.push(question);
+                    output += `
+                            <div class="card card-body mb-3">
+                                <h3>${question.title}</h3>
+                                <div id = "${question.id}">
+                                    <input type="radio" name="${question.id}" value=True>
+                                    <label>True</label>
+                                    <input type="radio" name="${question.id}" value=False>
+                                    <label>False</label>
+                                </div>
+                            </div>
+                    `;
+                });
+                output += `
+                <input type="text" name="username" placeholder="username">
+                <button type="submit" id="submitquiz" class="btn btn-primary">Submit quiz</button>
+                </form>`;
+                document.getElementById('output').innerHTML = output;
+                form = document.getElementById("hello");
+                form.addEventListener('formdata', (e) => {
+                    e.preventDefault();
+                    const formData = e.formData;
+                    formData.append('timetaken', ((new Date() - startTime) / 1000));
+                })
+            }).catch((err) => console.log(err) );
+    }
+</script>
+
+</html>
